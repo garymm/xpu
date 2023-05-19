@@ -44,13 +44,13 @@ THE SOFTWARE.
 #define THREADS_PER_BLOCK_Z  1
 
 __global__ void
-vectoradd_float(float* __restrict__ a, const float* __restrict__ b, const float* __restrict__ c, int width, int height)
+vectoradd_float(const float* __restrict__ a, const float* __restrict__ b, float* __restrict__ c, int width, int height)
   {
       int x = blockDim.x * blockIdx.x + threadIdx.x;
       int y = blockDim.y * blockIdx.y + threadIdx.y;
       int i = y * width + x;
       if (i < (width * height)) {
-        a[i] = b[i] + c[i];
+        c[i] = a[i] + b[i];
       }
   }
 
@@ -74,8 +74,8 @@ int main() {
   // initialize the input data
   int i;
   for (i = 0; i < NUM; i++) {
-    hostB[i] = (float)i;
-    hostC[i] = (float)i*100.0f;
+    hostA[i] = (float)i;
+    hostB[i] = (float)i*100.0f;
   }
   print_elapsed(&start, "initialize host memory");
 
@@ -89,8 +89,8 @@ int main() {
   print_elapsed(&start, "allocate device memory");
 
 
+  HIP_ASSERT(hipMemcpy(deviceA, hostA, NUM*sizeof(float), hipMemcpyHostToDevice));
   HIP_ASSERT(hipMemcpy(deviceB, hostB, NUM*sizeof(float), hipMemcpyHostToDevice));
-  HIP_ASSERT(hipMemcpy(deviceC, hostC, NUM*sizeof(float), hipMemcpyHostToDevice));
   print_elapsed(&start, "copy to device memory");
 
   hipLaunchKernelGGL(vectoradd_float,
@@ -99,16 +99,16 @@ int main() {
                   0, 0,
                   deviceA, deviceB, deviceC, WIDTH, HEIGHT);
 
-  HIP_ASSERT(hipMemcpy(hostA, deviceA, NUM*sizeof(float), hipMemcpyDeviceToHost));
+  HIP_ASSERT(hipMemcpy(hostC, deviceC, NUM*sizeof(float), hipMemcpyDeviceToHost));
   print_elapsed(&start, "run kernel and copy from device memory");
 
   // verify the results
   int errors = 0;
   for (i = 0; i < NUM; i++) {
-      if (hostA[i] != (hostB[i] + hostC[i])) {
+      if (hostC[i] != (hostA[i] + hostB[i])) {
         errors++;
         if (errors == 1) {
-            printf("Error at index %d: Expected %f, got %f\n", i, hostB[i] + hostC[i], hostA[i]);
+            printf("Error at index %d: Expected %f, got %f\n", i, hostA[i] + hostB[i], hostC[i]);
         }
       }
   }
