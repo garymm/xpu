@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <stdlib.h>
 #include <iostream>
 #include "hip/hip_runtime.h"
+#include "util.hpp"
 
 
 #ifdef NDEBUG
@@ -54,18 +55,6 @@ vectoradd_float(float* __restrict__ a, const float* __restrict__ b, const float*
   }
 
 using namespace std;
-
-void print_elapsed(chrono::time_point<chrono::system_clock> *start, const char *description) {
-  const auto end = chrono::system_clock::now();
-  cout << description << ": ";
-  const auto elapsed_mus = chrono::duration_cast<chrono::microseconds>(end - *start).count();
-  if (elapsed_mus < 1000) {
-    cout << elapsed_mus << "µs\n";
-  } else {
-    cout << elapsed_mus / 1000 << "ms\n";
-  }
-  *start = end;
-}
 
 int main() {
   hipDeviceProp_t devProp;

@@ -3,6 +3,12 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
+cc_library(
+    name = "util",
+    srcs = ["util.cpp"],
+    hdrs = ["util.hpp"],
+)
+
 # TODO: won't be needed if https://github.com/bazel-contrib/rules_cuda/pull/99 is released
 genrule(
     name = "cpp_to_cu",
@@ -19,13 +25,19 @@ cc_library(
     name = "vector_add_hip_cpu",
     srcs = ["vector_add_hip.cpp"],
     copts = ["-Wno-error"],
-    deps = ["@hip_cpu"],
+    deps = [
+        ":util",
+        "@hip_cpu",
+    ],
 )
 
 cuda_library(
     name = "vector_add_hip_cuda",
     srcs = ["vector_add_hip.cpp.cu"],
-    deps = ["@hip"],
+    deps = [
+        ":util",
+        "@hip",
+    ],
 )
 
 cc_binary(
