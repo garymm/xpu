@@ -36,9 +36,9 @@ cc_import(
 
 cc_import(
     name = "libxcb",
-    interface_library = "x86_64-linux-gnu/libxcb.so",
+    # Can't use .so.1 as interface_library for some reason.
+    shared_library = "x86_64-linux-gnu/libxcb.so.1",
     static_library = "x86_64-linux-gnu/libxcb.a",
-    system_provided = True,
 )
 
 cc_import(
