@@ -1,6 +1,6 @@
-# gpu-deflate
+# XPU
 
-Deflate on GPU
+single source that compiles to run on both GPU and CPU
 
 ## Set up
 
@@ -37,10 +37,3 @@ bazel run --cuda //:print_hip_info
   *  switch to conda environment or docker container
      that installs the toolchain (don't use a bazel
      hermetic toolchain).
-
-
-## References
-
-* [DEFLATE Compressed Data Format Specification version 1.3](https://tools.ietf.org/html/rfc1951)
-* [An Explanation of the Deflate Algorithm](https://zlib.net/feldspar.html)
-* [LZ77 Specification](https://www.cs.duke.edu/courses/spring03/cps296.5/papers/ziv_lempel_1977_universal_algorithm.pdf)
