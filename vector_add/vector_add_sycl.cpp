@@ -42,6 +42,7 @@ int main()
       });
     });
   }
+  print_elapsed(&start, "run kernel and copy from device memory");
 
   // verify the results
   int errors = 0;
