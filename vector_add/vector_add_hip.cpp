@@ -22,6 +22,7 @@ THE SOFTWARE.
 #include <assert.h>
 #include <stdio.h>
 #include <algorithm>
+#include <chrono>
 #include <stdlib.h>
 #include <iostream>
 #include "hip/hip_runtime.h"
@@ -33,12 +34,9 @@ THE SOFTWARE.
 #define HIP_ASSERT(x) (assert((x)==hipSuccess))
 #endif
 
-
-#define NUM_TRIALS 1
-#define WIDTH     8096
-#define HEIGHT    8096
-
-#define NUM       (WIDTH*HEIGHT)
+#define WIDTH  16192
+#define HEIGHT 8096
+#define NUM    (WIDTH*HEIGHT)  // 16192 * 8096 = 128Mi
 
 #define THREADS_PER_BLOCK_X  16
 #define THREADS_PER_BLOCK_Y  16
@@ -57,8 +55,24 @@ vectoradd_float(float* __restrict__ a, const float* __restrict__ b, const float*
 
 using namespace std;
 
-int main() {
+void print_elapsed(chrono::time_point<chrono::system_clock> *start, const char *description) {
+  const auto end = chrono::system_clock::now();
+  cout << description << ": ";
+  const auto elapsed_mus = chrono::duration_cast<chrono::microseconds>(end - *start).count();
+  if (elapsed_mus < 1000) {
+    cout << elapsed_mus << "µs\n";
+  } else {
+    cout << elapsed_mus / 1000 << "ms\n";
+  }
+  *start = end;
+}
 
+int main() {
+  hipDeviceProp_t devProp;
+  HIP_ASSERT(hipGetDeviceProperties(&devProp, 0));
+  cout << "device name: " << devProp.name << endl;
+
+  auto start = chrono::system_clock::now();
   float* hostA = (float*)malloc(NUM * sizeof(float));
   float* hostB = (float*)malloc(NUM * sizeof(float));
   float* hostC = (float*)malloc(NUM * sizeof(float));
@@ -66,6 +80,7 @@ int main() {
     cout << "failed allocating host memory\n";
     return -1;
   }
+  print_elapsed(&start, "allocate host memory");
 
   // initialize the input data
   int i;
@@ -73,10 +88,7 @@ int main() {
     hostB[i] = (float)i;
     hostC[i] = (float)i*100.0f;
   }
-
-  hipDeviceProp_t devProp;
-  HIP_ASSERT(hipGetDeviceProperties(&devProp, 0));
-  cout << "device name: " << devProp.name << endl;
+  print_elapsed(&start, "initialize host memory");
 
   float* deviceA;
   float* deviceB;
@@ -85,18 +97,22 @@ int main() {
   HIP_ASSERT(hipMalloc((void**)&deviceA, NUM * sizeof(float)));
   HIP_ASSERT(hipMalloc((void**)&deviceB, NUM * sizeof(float)));
   HIP_ASSERT(hipMalloc((void**)&deviceC, NUM * sizeof(float)));
+  print_elapsed(&start, "allocate device memory");
+
 
   HIP_ASSERT(hipMemcpy(deviceB, hostB, NUM*sizeof(float), hipMemcpyHostToDevice));
   HIP_ASSERT(hipMemcpy(deviceC, hostC, NUM*sizeof(float), hipMemcpyHostToDevice));
+  print_elapsed(&start, "copy to device memory");
 
-  for (i = 0; i < NUM_TRIALS; i++) {
-    hipLaunchKernelGGL(vectoradd_float,
-                    dim3(WIDTH/THREADS_PER_BLOCK_X, HEIGHT/THREADS_PER_BLOCK_Y),
-                    dim3(THREADS_PER_BLOCK_X, THREADS_PER_BLOCK_Y),
-                    0, 0,
-                    deviceA, deviceB, deviceC, WIDTH, HEIGHT);
-  }
+  hipLaunchKernelGGL(vectoradd_float,
+                  dim3(WIDTH/THREADS_PER_BLOCK_X, HEIGHT/THREADS_PER_BLOCK_Y),
+                  dim3(THREADS_PER_BLOCK_X, THREADS_PER_BLOCK_Y),
+                  0, 0,
+                  deviceA, deviceB, deviceC, WIDTH, HEIGHT);
+
   HIP_ASSERT(hipMemcpy(hostA, deviceA, NUM*sizeof(float), hipMemcpyDeviceToHost));
+  print_elapsed(&start, "run kernel and copy from device memory");
+
   // verify the results
   int errors = 0;
   for (i = 0; i < NUM; i++) {

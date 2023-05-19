@@ -1,0 +1,37 @@
+load("@rules_cuda//cuda:defs.bzl", "cuda_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+# TODO: won't be needed if https://github.com/bazel-contrib/rules_cuda/pull/99 is released
+genrule(
+    name = "cpp_to_cu",
+    srcs = [
+        "vector_add_hip.cpp",
+    ],
+    outs = [
+        "vector_add_hip.cpp.cu",
+    ],
+    cmd = "for i in $(SRCS); do cp $$i $(GENDIR)/$$i.cu; done",
+)
+
+cc_library(
+    name = "vector_add_hip_cpu",
+    srcs = ["vector_add_hip.cpp"],
+    copts = ["-Wno-error"],
+    deps = ["@hip_cpu"],
+)
+
+cuda_library(
+    name = "vector_add_hip_cuda",
+    srcs = ["vector_add_hip.cpp.cu"],
+    deps = ["@hip"],
+)
+
+cc_binary(
+    name = "vector_add_hip",
+    deps = select({
+        "@rules_cuda//cuda:is_enabled": [":vector_add_hip_cuda"],
+        "//conditions:default": [":vector_add_hip_cpu"],
+    }),
+)
