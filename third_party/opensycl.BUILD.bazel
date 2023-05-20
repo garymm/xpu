@@ -1,0 +1,7 @@
+cc_library(
+    name = "opensycl",
+    srcs = glob(["lib/**/*.so", "lib/*.so"]),
+    hdrs = glob(["include/**/*.hpp", "include/**/*.h"]),
+    includes = ["include"],
+    visibility = ["//visibility:public"],
+)

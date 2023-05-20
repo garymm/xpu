@@ -2,7 +2,7 @@
 #include <iostream>
 #include <chrono>
 #include <vector>
-
+#include "util.hpp"
 #include <CL/sycl.hpp>
 
 constexpr size_t NUM = 16192 * 8096;
@@ -10,13 +10,13 @@ constexpr size_t NUM = 16192 * 8096;
 int main()
 {
   cl::sycl::queue q;
-  auto start = chrono::system_clock::now();
+  auto start = std::chrono::system_clock::now();
   std::vector<float> a(NUM);
   std::vector<float> b(NUM);
   print_elapsed(&start, "allocate host memory");
 
   // initialize the input data
-  int i;
+  size_t i;
   for (i = 0; i < NUM; i++) {
     a[i] = static_cast<float>(i);
     b[i] = static_cast<float>(i*100);
@@ -50,12 +50,12 @@ int main()
       if (c[i] != (a[i] + b[i])) {
         errors++;
         if (errors == 1) {
-            printf("Error at index %d: Expected %f, got %f\n", i, a[i] + b[i], c[i]);
+            std::cout << "Error at index " << i << ": Expected " << a[i] + b[i] << ", got " << c[i] << "\n";
         }
       }
   }
   if (errors) {
-      printf("FAILED: %d errors\n",errors);
+      printf("FAILED: %d errors\n", errors);
   } else {
       printf("PASSED!\n");
   }

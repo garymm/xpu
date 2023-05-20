@@ -47,3 +47,20 @@ cc_binary(
         "//conditions:default": [":vector_add_hip_cpu"],
     }),
 )
+
+cc_library(
+    name = "vector_add_sycl_cpu",
+    srcs = ["vector_add_sycl.cpp"],
+    deps = [
+        ":util",
+        "@opensycl",
+    ],
+)
+
+cc_binary(
+    name = "vector_add_sycl",
+    deps = select({
+        # "@rules_cuda//cuda:is_enabled": [":vector_add_sycl_cuda"],
+        "//conditions:default": [":vector_add_sycl_cpu"],
+    }),
+)
