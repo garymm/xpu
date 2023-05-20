@@ -13,18 +13,12 @@ Currently only supported on Linux x86_64 / AMD64.
 bazel test //...
 ```
 
-* See what [HIP](https://rocm-developer-tools.github.io/HIP/) detects about your computer:
+And with CUDA:
 
 ```
-bazel run //:print_hip_info
+bazel test --cuda //...
 ```
 
-If you have the CUDA toolkit installed,
-you can verify things are working with CUDA:
-
-```
-bazel run --cuda //:print_hip_info
-```
 
 ## TODO
 
