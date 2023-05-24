@@ -14,9 +14,11 @@ genrule(
     name = "cpp_to_cu",
     srcs = [
         "vector_add_hip.cpp",
+        "vector_add_thrust.cpp",
     ],
     outs = [
         "vector_add_hip.cpp.cu",
+        "vector_add_thrust.cpp.cu",
     ],
     cmd = "for i in $(SRCS); do cp $$i $(GENDIR)/$$i.cu; done",
 )
@@ -48,9 +50,26 @@ cc_binary(
     }),
 )
 
+# Not working yet.
+# Building with syclcc works. To see wehat it runs under the hood, run:
+# syclcc --opensycl-dryrun --opensycl-platform=cpu ~/src/garymm/xpu/vector_add/vector_add_sycl.cpp ~/src/garymm/xpu/vector_add/util.cpp
 cc_library(
     name = "vector_add_sycl_cpu",
     srcs = ["vector_add_sycl.cpp"],
+    copts = [
+        "-I",
+        "/home/garymm/mambaforge/envs/opensycl/include",
+    ],
+    defines = ["__HIPSYCL_ENABLE_OMPHOST_TARGET__"],
+    # linkopts = [
+    #     "-L/home/garymm/src/OpenSYCL/OpenSYCL/build/install/bin/../lib/",
+    #     "-lhipSYCL-rt",
+    #     "-Wl,-rpath=/home/garymm/src/OpenSYCL/OpenSYCL/build/install/bin/../lib/",
+    #     "-L/home/garymm/mambaforge/envs/opensycl/lib",
+    #     "-lboost_context",
+    #     "-lboost_fiber",
+    #     "-Wl,-rpath=/home/garymm/mambaforge/envs/opensycl/lib",
+    # ],
     deps = [
         ":util",
         "@opensycl",
@@ -62,5 +81,31 @@ cc_binary(
     deps = select({
         # "@rules_cuda//cuda:is_enabled": [":vector_add_sycl_cuda"],
         "//conditions:default": [":vector_add_sycl_cpu"],
+    }),
+)
+
+cc_library(
+    name = "vector_add_thrust_cpu",
+    srcs = ["vector_add_thrust.cpp"],
+    copts = ["-Wno-error"],
+    defines = ["THRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_TBB"],
+    deps = [
+        ":util",
+        "@cuda",
+        "@onetbb//:tbb",
+    ],
+)
+
+cuda_library(
+    name = "vector_add_thrust_cuda",
+    srcs = ["vector_add_thrust.cpp.cu"],
+    deps = [":util"],
+)
+
+cc_binary(
+    name = "vector_add_thrust",
+    deps = select({
+        "@rules_cuda//cuda:is_enabled": [":vector_add_thrust_cuda"],
+        "//conditions:default": [":vector_add_thrust_cpu"],
     }),
 )

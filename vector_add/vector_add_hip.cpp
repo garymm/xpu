@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include <stdlib.h>
 #include <iostream>
 #include "hip/hip_runtime.h"
-#include "util.hpp"
+#include "vector_add/util.hpp"
 
 
 #ifdef NDEBUG
@@ -35,9 +35,9 @@ THE SOFTWARE.
 #define HIP_ASSERT(x) (assert((x)==hipSuccess))
 #endif
 
-#define WIDTH  16192
-#define HEIGHT 8096
-#define NUM    (WIDTH*HEIGHT)  // 16192 * 8096 = 128Mi
+#define WIDTH  32384
+#define HEIGHT 32384
+#define NUM    (WIDTH*HEIGHT)  // 32384 * 32384 ~= 1 billion elements
 
 #define THREADS_PER_BLOCK_X  16
 #define THREADS_PER_BLOCK_Y  16

@@ -1,0 +1,8 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "cuda",
+    hdrs = glob(["include/thrust/**/*", "include/cuda/**/*", "include/nv/**/*"]),
+    includes = ["include"],
+    visibility = ["//visibility:public"],
+)

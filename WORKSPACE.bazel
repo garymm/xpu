@@ -117,8 +117,10 @@ system_repo(
     },
 )
 
-new_local_repository(
-    name = "opensycl",
-    build_file = "//:third_party/opensycl.BUILD.bazel",
-    path = "/home/garymm/src/OpenSYCL/OpenSYCL/build/install",
+system_repo(
+    name = "cuda",
+    build_file = "//:third_party/cuda.BUILD.bazel",
+    symlinks = {
+        "include": "/usr/local/cuda/targets/x86_64-linux/include",
+    },
 )

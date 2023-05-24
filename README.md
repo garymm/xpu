@@ -20,14 +20,20 @@ bazel test --cuda //...
 ```
 
 
-## TODO
+## Status
 
-* Support building on ARM64. Currently using Bootlin
-  toolchain which only exists for x86-64. Probably easiest
-  to:
-  *  wait for libc++ (LLVM's std lib) to implement
-     std::execution (AKA PSTL), then we can switch to use
-     LLVM toolchain, or
-  *  switch to conda environment or docker container
-     that installs the toolchain (don't use a bazel
-     hermetic toolchain).
+### SYCL
+
+* Got it building and running with OpenSYCL syclcc on CPU, but not
+  through bazel.
+* Doesn't work with nvc++ possibly due to an nvc++ bug.
+  <https://github.com/OpenSYCL/OpenSYCL/issues/1052>.
+* Got it building and running with Intel DPC++ on CPU and GPU, but not through bazel.
+
+### HIP
+
+Working with bazel for both CUDA and CPU.
+
+### Thrust
+
+Working with bazel for both CUDA and CPU.
