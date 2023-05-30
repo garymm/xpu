@@ -22,10 +22,10 @@ int main()
   print_elapsed(&start, "allocate output memory");
 
   cl::sycl::range<1> work_items{a.size()};
-  q.submit([&](cl::sycl::handler& cgh){
-    auto access_a = a.get_access<cl::sycl::access::mode::write>(cgh);
-    auto access_b = b.get_access<cl::sycl::access::mode::write>(cgh);
-    cgh.parallel_for<class init_input>(work_items,
+  q.submit([&](cl::sycl::handler& handler){
+    auto access_a = a.get_access<cl::sycl::access::mode::write>(handler);
+    auto access_b = b.get_access<cl::sycl::access::mode::write>(handler);
+    handler.parallel_for<class init_input>(work_items,
                                         [=] (cl::sycl::id<1> tid) {
       access_a[tid] = static_cast<float>(tid);
       access_b[tid] = static_cast<float>(tid * 100);
@@ -34,12 +34,12 @@ int main()
   print_elapsed(&start, "initialize input data");
 
 
-  q.submit([&](cl::sycl::handler& cgh){
-    auto access_a = a.get_access<cl::sycl::access::mode::read>(cgh);
-    auto access_b = b.get_access<cl::sycl::access::mode::read>(cgh);
-    auto access_c = c.get_access<cl::sycl::access::mode::write>(cgh);
+  q.submit([&](cl::sycl::handler& handler){
+    auto access_a = a.get_access<cl::sycl::access::mode::read>(handler);
+    auto access_b = b.get_access<cl::sycl::access::mode::read>(handler);
+    auto access_c = c.get_access<cl::sycl::access::mode::write>(handler);
 
-    cgh.parallel_for<class vector_add>(work_items,
+    handler.parallel_for<class vector_add>(work_items,
                                         [=] (cl::sycl::id<1> tid) {
       access_c[tid] = access_a[tid] + access_b[tid];
     });
