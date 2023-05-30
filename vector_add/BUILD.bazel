@@ -36,6 +36,9 @@ cc_library(
 cuda_library(
     name = "vector_add_hip_cuda",
     srcs = ["vector_add_hip.cpp.cu"],
+    # Should only be built if needed by the cc_binary. Otherwise build fail if cuda is not enabled.
+    # TODO: wrap cc_library and cuda_library in a macro that does this automatically.
+    tags = ["manual"],
     deps = [
         ":util",
         "@hip",
@@ -61,6 +64,7 @@ cc_library(
         "/home/garymm/mambaforge/envs/opensycl/include",
     ],
     defines = ["__HIPSYCL_ENABLE_OMPHOST_TARGET__"],
+    tags = ["manual"],  # TODO: remove when building is fixed.
     # linkopts = [
     #     "-L/home/garymm/src/OpenSYCL/OpenSYCL/build/install/bin/../lib/",
     #     "-lhipSYCL-rt",
@@ -78,6 +82,7 @@ cc_library(
 
 cc_binary(
     name = "vector_add_sycl",
+    tags = ["manual"],  # TODO: remove when building is fixed.
     deps = select({
         # "@rules_cuda//cuda:is_enabled": [":vector_add_sycl_cuda"],
         "//conditions:default": [":vector_add_sycl_cpu"],
@@ -99,6 +104,9 @@ cc_library(
 cuda_library(
     name = "vector_add_thrust_cuda",
     srcs = ["vector_add_thrust.cpp.cu"],
+    # Should only be built if needed by the cc_binary. Otherwise build fail if cuda is not enabled.
+    # TODO: wrap cc_library and cuda_library in a macro that does this automatically.
+    tags = ["manual"],
     deps = [":util"],
 )
 
