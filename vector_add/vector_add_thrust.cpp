@@ -31,6 +31,7 @@ std::cout << "Thrust backend: ";
 
   thrust::transform(a_device.begin(), a_device.end(), b_device.begin(), c_device.begin(), thrust::plus<float>());
 #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
+  // copy data from GPU to CPU
   thrust::host_vector<float> a = a_device;
   thrust::host_vector<float> b = b_device;
   thrust::host_vector<float> c = c_device;
