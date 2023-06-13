@@ -121,3 +121,44 @@ system_repo(
         "include": "/usr/local/cuda/targets/x86_64-linux/include",
     },
 )
+
+RULES_FOREIGN_CC_VERSION = "2ee029a7448d578da178f232bbb14d9191a32701"
+
+http_archive(
+    name = "rules_foreign_cc",
+    sha256 = "a717fc9101e2c46bda5dea104e0b20da41377de93d0ad68bb8993d3e6b80c6d0",
+    strip_prefix = "rules_foreign_cc-%s" % RULES_FOREIGN_CC_VERSION,
+    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/%s.tar.gz" % RULES_FOREIGN_CC_VERSION,
+)
+
+load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+
+rules_foreign_cc_dependencies()
+
+OPENSYCL_VERSION = "27542ab71a72a0dfefdca58c2b0a42462a9c5300"
+
+http_archive(
+    name = "opensycl",
+    build_file = "//:third_party/opensycl.BUILD.bazel",
+    patch_args = ["-p1"],
+    patches = [
+        "//:third_party/opensycl-0001.patch",
+        "//:third_party/opensycl-0002.patch",
+    ],
+    sha256 = "fd6fb30900090af07ee58602b9a30f5244b66ef838f0c6393d4edd0316b664b7",
+    strip_prefix = "OpenSYCL-%s" % OPENSYCL_VERSION,
+    url = "https://github.com/OpenSYCL/OpenSYCL/archive/%s.tar.gz" % OPENSYCL_VERSION,
+)
+
+RULES_BOOST_VERSION = "929f5412553c5295d30b16858da7cbefba0d0870"
+
+http_archive(
+    name = "com_github_nelhage_rules_boost",
+    sha256 = "3eb32a58b83b21fd5ab3f927bcefc85d721f015aa1fcec6d3f452f9a3975f92f",
+    strip_prefix = "rules_boost-%s" % RULES_BOOST_VERSION,
+    url = "https://github.com/nelhage/rules_boost/archive/%s.tar.gz" % RULES_BOOST_VERSION,
+)
+
+load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
+
+boost_deps()

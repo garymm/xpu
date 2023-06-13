@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Gary Miguel <garymm@garymm.org>
+Date: Tue, 13 Jun 2023 23:13:05 +0000
+Subject: look for plugins in HIPSYCL_INSTALL_PREFIX. This makes it much easier
+ for Bazel to put them in a place where they will be found
+
+
+diff --git a/src/runtime/backend_loader.cpp b/src/runtime/backend_loader.cpp
+index 839df9a6..9527c097 100644
+--- a/src/runtime/backend_loader.cpp
++++ b/src/runtime/backend_loader.cpp
+@@ -148,7 +148,7 @@ std::vector<fs::path> get_plugin_search_paths()
+   if (dladdr(reinterpret_cast<void*>(&get_plugin_search_paths), &info)) {
+     paths.emplace_back(fs::path{info.dli_fname}.parent_path() / "hipSYCL");
+   }
+-  const auto install_prefixed_path = fs::path{HIPSYCL_INSTALL_PREFIX} / "lib" / "hipSYCL";
++  const auto install_prefixed_path = fs::path{HIPSYCL_INSTALL_PREFIX};
+ #else
+   if(HMODULE handle = GetModuleHandleA(HIPSYCL_RT_LIBRARY_NAME))
+   {
+-- 
+2.25.1
+

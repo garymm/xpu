@@ -37,7 +37,6 @@ cuda_library(
     name = "vector_add_hip_cuda",
     srcs = ["vector_add_hip.cpp.cu"],
     # Should only be built if needed by the cc_binary. Otherwise build fail if cuda is not enabled.
-    # TODO: wrap cc_library and cuda_library in a macro that does this automatically.
     tags = ["manual"],
     deps = [
         ":util",
@@ -53,40 +52,13 @@ cc_binary(
     }),
 )
 
-# Not working yet.
-# Building with syclcc works. To see wehat it runs under the hood, run:
-# syclcc --opensycl-dryrun --opensycl-platform=cpu ~/src/garymm/xpu/vector_add/vector_add_sycl.cpp ~/src/garymm/xpu/vector_add/util.cpp
-cc_library(
-    name = "vector_add_sycl_cpu",
+cc_binary(
+    name = "vector_add_sycl",
     srcs = ["vector_add_sycl.cpp"],
-    copts = [
-        "-I",
-        "/home/garymm/mambaforge/envs/opensycl/include",
-    ],
-    defines = ["__HIPSYCL_ENABLE_OMPHOST_TARGET__"],
-    tags = ["manual"],  # TODO: remove when building is fixed.
-    # linkopts = [
-    #     "-L/home/garymm/src/OpenSYCL/OpenSYCL/build/install/bin/../lib/",
-    #     "-lhipSYCL-rt",
-    #     "-Wl,-rpath=/home/garymm/src/OpenSYCL/OpenSYCL/build/install/bin/../lib/",
-    #     "-L/home/garymm/mambaforge/envs/opensycl/lib",
-    #     "-lboost_context",
-    #     "-lboost_fiber",
-    #     "-Wl,-rpath=/home/garymm/mambaforge/envs/opensycl/lib",
-    # ],
     deps = [
         ":util",
         "@opensycl",
     ],
-)
-
-cc_binary(
-    name = "vector_add_sycl",
-    tags = ["manual"],  # TODO: remove when building is fixed.
-    deps = select({
-        # "@rules_cuda//cuda:is_enabled": [":vector_add_sycl_cuda"],
-        "//conditions:default": [":vector_add_sycl_cpu"],
-    }),
 )
 
 cc_library(
@@ -105,7 +77,6 @@ cuda_library(
     name = "vector_add_thrust_cuda",
     srcs = ["vector_add_thrust.cpp.cu"],
     # Should only be built if needed by the cc_binary. Otherwise build fail if cuda is not enabled.
-    # TODO: wrap cc_library and cuda_library in a macro that does this automatically.
     tags = ["manual"],
     deps = [":util"],
 )

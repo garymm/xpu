@@ -24,8 +24,7 @@ bazel test --cuda //...
 
 ### SYCL
 
-* Got it building and running with OpenSYCL syclcc on CPU, but not
-  through bazel.
+* Got it building and running with OpenSYCL on CPU / OpenMP.
 * Doesn't work with nvc++ possibly due to an nvc++ bug.
   <https://github.com/OpenSYCL/OpenSYCL/issues/1052>.
 * Got it building and running with Intel DPC++ on CPU and GPU, but not through bazel.

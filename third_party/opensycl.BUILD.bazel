@@ -1,7 +1,72 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 cc_library(
     name = "opensycl",
-    srcs = glob(["lib/**/*.so", "lib/*.so"]),
-    hdrs = glob(["include/**/*.hpp", "include/**/*.h"]),
+    deps = [":runtime_omp"],
+    data = [":runtime_omp"],  # openSYCL expects the backends to be in separate shared library files that gets loaded at runtime.
+    hdrs = ["include/CL/sycl.hpp"],
     includes = ["include"],
     visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "common",
+    strip_include_prefix = "include",
+    hdrs = [
+        "include/hipSYCL/common/config.hpp",  # generated so glob doesn't pick it up
+    ] + glob([
+        "include/hipSYCL/common/*.hpp",
+        "include/hipSYCL/glue/**/*.hpp",
+        "include/hipSYCL/sycl/*.hpp",
+        "include/hipSYCL/sycl/detail/*.hpp",
+        "include/hipSYCL/sycl/info/*.hpp",
+        "include/hipSYCL/sycl/libkernel/*.hpp",
+        "include/hipSYCL/sycl/libkernel/*/*.hpp",
+        "include/hipSYCL/sycl/libkernel/detail/fp16/*.h",
+        "include/hipSYCL/sycl/libkernel/sscp/builtins/*.hpp",
+    ]),
+)
+
+cc_library(
+    name = "runtime_omp",
+    defines = ["__HIPSYCL_ENABLE_OMPHOST_TARGET__"],
+    local_defines = ["HIPSYCL_DEBUG_LEVEL=2"],
+    srcs = glob([
+        "src/runtime/*.cpp",
+        "src/runtime/omp/*.cpp",
+        "src/runtime/generic/*.cpp",
+        "src/runtime/hw_model/*.cpp",
+        "src/runtime/serialization/*.cpp",
+    ]),
+    hdrs = glob([
+        "include/hipSYCL/runtime/*.hpp",
+        "include/hipSYCL/runtime/generic/*.hpp",
+        "include/hipSYCL/runtime/hw_model/*.hpp",
+        "include/hipSYCL/runtime/omp/*.hpp",
+        "include/hipSYCL/runtime/serialization/*.hpp",
+    ]),
+    strip_include_prefix = "include",
+    deps = [":common", "@boost//:fiber"],
+    copts = ["-w", "-fopenmp"],
+    linkopts = ["-fopenmp"],
+)
+
+shared_library_data_dir = "_solib_x86-64"
+
+genrule(
+    name = "gen_config_hpp",
+    srcs = ["include/hipSYCL/common/config.hpp.in"],
+    outs = ["include/hipSYCL/common/config.hpp"],
+    cmd = """
+    cat "$<" \\
+      | sed 's/@HIPSYCL_VERSION_MAJOR@/0/g' \\
+      | sed 's/@HIPSYCL_VERSION_MINOR@/0/g' \\
+      | sed 's/@HIPSYCL_VERSION_PATCH@/0/g' \\
+      | sed 's:@CMAKE_INSTALL_PREFIX@:""" + shared_library_data_dir + """:g' \\
+      | sed 's/@CXX_FILESYSTEM_HEADER@/filesystem/g' \\
+      | sed 's/@CXX_FILESYSTEM_NAMESPACE@/std::filesystem/g' \\
+      > "$@"
+    """,
+    stamp = 1,
+    tags = ["manual"],
 )

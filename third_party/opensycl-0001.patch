@@ -1,0 +1,60 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Gary Miguel <garymm@garymm.org>
+Date: Tue, 13 Jun 2023 21:46:24 +0000
+Subject: fix HIPSYCL_LIBKERNEL_COMPILER_SUPPORTS_{CUDA,HIP} variables
+
+They were being set to 0 or 1 but being checked to see if they
+were defined. Instead just define them rather than setting them to 1
+and do not do anything rather than set them to 0.
+
+diff --git a/include/hipSYCL/sycl/libkernel/cuda/cuda_backend.hpp b/include/hipSYCL/sycl/libkernel/cuda/cuda_backend.hpp
+index 1ec2c82b..8858caf8 100644
+--- a/include/hipSYCL/sycl/libkernel/cuda/cuda_backend.hpp
++++ b/include/hipSYCL/sycl/libkernel/cuda/cuda_backend.hpp
+@@ -30,10 +30,10 @@
+ #define HIPSYCL_LIBKERNEL_CUDA_BACKEND_HPP
+ 
+ #if defined(__CUDACC__)
+- #define HIPSYCL_LIBKERNEL_COMPILER_SUPPORTS_CUDA 1
++ #define HIPSYCL_LIBKERNEL_COMPILER_SUPPORTS_CUDA
+  #if defined(__NVCOMPILER)
+   #define HIPSYCL_LIBKERNEL_CUDA_NVCXX
+- #else 
++ #else
+   #define HIPSYCL_LIBKERNEL_CUDA_CLANG
+  #endif
+ 
+@@ -45,8 +45,6 @@
+  #ifdef HIPSYCL_LIBKERNEL_CUDA_NVCXX
+   #include <nv/target>
+  #endif
+-#else
+- #define HIPSYCL_LIBKERNEL_COMPILER_SUPPORTS_CUDA 0
+ #endif
+ 
+ #if (defined(__CUDA_ARCH__) && __CUDA_ARCH__ != 0 \
+diff --git a/include/hipSYCL/sycl/libkernel/hip/hip_backend.hpp b/include/hipSYCL/sycl/libkernel/hip/hip_backend.hpp
+index 95b12406..3570f05f 100644
+--- a/include/hipSYCL/sycl/libkernel/hip/hip_backend.hpp
++++ b/include/hipSYCL/sycl/libkernel/hip/hip_backend.hpp
+@@ -31,7 +31,7 @@
+ 
+ 
+ #if defined(__HIP__) || defined(__HCC__)
+- #define HIPSYCL_LIBKERNEL_COMPILER_SUPPORTS_HIP 1
++ #define HIPSYCL_LIBKERNEL_COMPILER_SUPPORTS_HIP
+ // We need to include HIP headers always to have __HIP_DEVICE_COMPILE__
+ // available below
+  #ifdef __HIPSYCL_ENABLE_HIP_TARGET__
+@@ -40,8 +40,6 @@
+   #include <hip/hip_runtime.h>
+   #pragma clang diagnostic pop
+  #endif
+-#else
+- #define HIPSYCL_LIBKERNEL_COMPILER_SUPPORTS_HIP 0
+ #endif
+ 
+ #if defined(__HIP_DEVICE_COMPILE__)
+-- 
+2.25.1
+
