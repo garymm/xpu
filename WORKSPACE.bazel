@@ -1,26 +1,22 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-BAZEL_BOOTLIN_COMMIT = "22ee91e01bbbc0711444c49102e92010fc6d6c95"
+BAZEL_BOOTLIN_VERSION = "81204765683aa144fe537da97b0a1d6c3e4eac38"
 
 http_archive(
     name = "bazel_bootlin",
-    sha256 = "3acd4ebca797fb05db00b1ebcac831fa920f503dd611c255c7f80cfad944182e",
-    strip_prefix = "bazel_bootlin-{commit}".format(commit = BAZEL_BOOTLIN_COMMIT),
-    url = "https://github.com/oliverlee/bazel_bootlin/archive/{commit}.tar.gz".format(
-        commit = BAZEL_BOOTLIN_COMMIT,
-    ),
+    sha256 = "72c90d841f7e2a00f35052388e0e48b5b1619584a49306abe11a98d0d9a9b01b",
+    strip_prefix = "bazel_bootlin-%s" % BAZEL_BOOTLIN_VERSION,
+    url = "https://github.com/oliverlee/bazel_bootlin/archive/%s.tar.gz" % BAZEL_BOOTLIN_VERSION,
 )
 
 load("@bazel_bootlin//:defs.bzl", "bootlin_toolchain")
 
-# for mapping from buildroot version to gcc version
-# see https://toolchains.bootlin.com/releases_x86-64.html
-#
 bootlin_toolchain(
-    name = "gcc_12_2_toolchain",
+    name = "gcc_12_toolchain",
     architecture = "x86-64",
-    buildroot_version = "2022.08-1_bleeding",
-    extra_cxxflags = [
+    # see https://toolchains.bootlin.com/releases_x86-64.html
+    buildroot_version = "bleeding-edge-2022.08-1",
+    extra_cxx_flags = [
         "-std=c++23",
         "-march=native",
         "-fdiagnostics-color=always",
@@ -45,19 +41,20 @@ bootlin_toolchain(
         "-Wlogical-op",
         "-Wuseless-cast",
     ],
+    libc_impl = "glibc",
 )
 
 register_toolchains(
-    "@{toolchain_name}//:toolchain".format(toolchain_name = "gcc_12_2_toolchain"),
+    "@{toolchain_name}//:toolchain".format(toolchain_name = "gcc_12_toolchain"),
 )
 
-RULES_CUDA_VERSION = "v0.1.2"
+RULES_CUDA_VERSION = "24e5d37bbd6f962981ff29a80715917526d8201e"
 
 http_archive(
     name = "rules_cuda",
-    sha256 = "dc1f4f704ca56e3d5edd973f98a45f0487d0f28c689d0a57ba236112148b1833",
+    sha256 = "6f7ecbf6a86e1347dc1c790f149ce5f22b1e2a21ba96be1590654c7fc5de7361",
     strip_prefix = "rules_cuda-%s" % RULES_CUDA_VERSION,
-    urls = ["https://github.com/bazel-contrib/rules_cuda/releases/download/%s/rules_cuda-%s.tar.gz" % (RULES_CUDA_VERSION, RULES_CUDA_VERSION)],
+    url = "https://github.com/bazel-contrib/rules_cuda/archive/%s.tar.gz" % RULES_CUDA_VERSION,
 )
 
 load("@rules_cuda//cuda:repositories.bzl", "register_detected_cuda_toolchains", "rules_cuda_dependencies")
